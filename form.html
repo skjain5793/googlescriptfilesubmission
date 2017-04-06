@@ -1,0 +1,397 @@
+
+<html>
+   
+<head>
+   
+<title></title>
+   
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">  
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css">
+   
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
+
+<script src="https://gumroad.com/js/gumroad.js"></script>
+
+
+
+
+ 
+
+
+<script>
+
+
+var numUploads = {};
+numUploads.done = 0;
+numUploads.total = 0;
+
+
+
+function registered(whatToWrite) {
+if(whatToWrite=="Yes")
+{
+
+            //Show Progress Bar
+
+        var allFiles = document.getElementById('myFile').files;
+        numUploads.total = allFiles.length;
+        $('#progressbar').progressbar({
+        value : false
+        });//.append("<div class='caption'>37%</div>");
+        $(".progress-label").html('Uploading files ......');
+        $(".progress-label").css('background-color','#26a69a');
+        $(".progress-label").css('color','white');
+        $("#myForm").hide();
+        // Send each file at a time
+        for (var i = 0; i < allFiles.length; i++) {
+            console.log(i);
+            
+
+            
+            
+        if (allFiles[i].size > 1024 * 1024 * 5) {
+            showError("The file size should be < 5 MB");
+    return;
+ 
+          $("#form").show();
+          return;
+        }
+
+        else
+        {
+            sendFileToDrive(allFiles[i],i);
+        }
+        }
+
+}
+if(whatToWrite=="No")
+{
+$("#myForm").hide();
+$("#loadingImage").hide();
+$("#register").css("display", "block");
+}
+
+}
+
+function go() {
+var mobile=$("#mobileno").val();
+  google.script.run.withSuccessHandler(registered).writeSomething(mobile);
+}
+
+
+
+// Upload the files into a folder in drive
+// This is set to send them all to one folder (specificed in the .gs file)
+function iteratorFileUpload() {
+    var allFiles = document.getElementById('myFile').files;
+    var mobile=$("#mobileno").val();
+    var no=/^[0-9]+$/;
+    
+    if($("#name").val()=='')
+    {
+    showError("Please enter your name");
+    return;
+    }
+    else if ($("#rollno").val()=='') {
+    showError("Please enter your roll no.");
+    return;
+    }
+    else if ($("#mobileno").val()=='') {
+    showError("Please enter your Mobile no.");
+    return;
+    }
+    else if (!mobile.match(no) || mobile.length!=10) {
+    showError("Invalid Mobile No.");
+    return;
+    }
+
+    else if (allFiles.length == 0) {
+    showError("No file selected");
+    return;
+       
+    }
+   
+    
+    
+    
+    
+    else {
+      $("#myForm").hide();
+      $("#loadingImage").show();
+        go();
+    }
+}
+
+function sendFileToDrive(file,i) {
+
+var index = i+1;
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        var content = reader.result;
+        console.log('Sending ' + file.name);
+        var name = $("#name").val();
+        var number = "C901";
+        var rollno = $("#rollno").val();
+        google.script.run.withSuccessHandler(updateProgressbar).uploadFileToDrive(content, file.name, name, number, index, rollno);
+    }
+    reader.readAsDataURL(file);
+}
+
+function updateProgressbar( idUpdate ){
+
+   console.log('Received: ' + idUpdate);
+   numUploads.done++;
+   var porc = Math.ceil((numUploads.done / numUploads.total)*100);
+   $("#loadingImage").hide();
+   $("#progressbar").progressbar({value: porc });
+   $(".progress-label").text(numUploads.done +'/'+ numUploads.total);
+  
+   if( numUploads.done == numUploads.total ){
+      //uploadsFinished();
+      $("#myForm").hide();
+      $("#progressbar").hide();
+      $(".progress-label").hide();
+      $("#success").css("display", "block");
+      
+      
+      formSubmit();
+      
+      numUploads.done = 0;
+   };
+}
+
+    function fileUploaded(status) {
+      document.getElementById('myForm').style.display = 'none';
+      document.getElementById('output').innerHTML = status;
+    }
+    
+    
+       function showError(e) {
+        $('#progress').addClass('red-text').html(e);
+      }
+
+
+
+
+  </script>
+
+
+   
+   </head>
+   
+   
+   
+   
+<body>
+
+
+
+  
+ <center> <img src="http://ssccglpinnacle.com/wp-content/uploads/2016/05/Pinnacle-Logo.jpg"> </center>
+ 
+ <center><img id="loadingImage" src="http://blog.teamtreehouse.com/wp-content/uploads/2015/05/InternetSlowdown_Day.gif"></center>
+  
+  
+    <div id="register" style="display:none">
+        <h5 class="center-align teal-text">Sorry you are not registered with us ! </h5><br><br><br>
+        <p class="center-align"> For Registration , click below .....</p>    
+         <p class="center-align"><a class="btn btn-success" name="click to submit more forms" href="https://script.google.com/macros/s/AKfycbyP5daB7nca3ZuDMpCBfFIxy56xOpuSkc7isPRvjLZF/exec">Click here</a></p>
+        </div>  
+  
+  
+  
+  
+      <form id="myForm" class="main" novalidate="novalidate" style="max-width: 480px;margin: 40px auto;"> 
+    <div id="forminner">
+        <div class="row">
+          <div class="col s12">
+            <h5 class="center-align teal-text">Submit your solved response sheets for All India Open Challenge Tier 3 Program :</h5>
+           </div>
+        </div>
+    
+    
+      <div class="row">
+          <div class="input-field col s12">
+      
+        <input type="text" id="name" name="name" class="validate" required="" aria-required="true">
+        <label for="name">Name</label>
+   
+        </div>
+      </div>
+
+      <div class="row">
+          <div class="input-field col s12">
+      
+        <input type="text" id="rollno" name="rollno" class="validate" required="" aria-required="true">
+        <label for="rollno">SSC Roll Number</label>
+   
+        </div>
+      </div>
+
+
+      <div class="row">
+          <div class="input-field col s12">
+      
+        <input type="text" id="mobileno" name="mobileno" class="validate" required="" aria-required="true">
+        <label for="rollno">Mobile Number</label>
+   
+        </div>
+      </div>
+      
+
+
+
+
+       <div class="row">
+          <div class="file-field input-field col s12">
+            <div class="btn">
+              <span>File</span>
+
+           <input type="file" name="myFile" id="myFile" multiple="multiple" required>
+      
+         </div>
+            <div class="file-path-wrapper">
+              <input class="file-path validate" type="text" placeholder="Select a file on your computer">
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="row">
+          <div class="input-field col s6">
+
+          <input type="button" class="waves-effect waves-light btn submit-btn" value="Submit" onclick="iteratorFileUpload();  return false;">
+         </div>   
+         </div>
+            <div class="row">
+             <center><div class="input-field col s12" id = "progress"></div></center>
+        </div>
+         
+  </div>
+  
+    
+    </form>
+  
+  
+  
+  
+  
+  
+  
+
+   
+  <script type="text/javascript">
+  
+  
+  $("#loadingImage").hide();
+  
+        function formSubmit() {
+           var mobile=$("#mobileno").val();
+           var allFiles = document.getElementById('myFile').files;
+           var total = parseInt(allFiles.length);
+           var name = document.getElementById("name").value;
+           var rollno = document.getElementById("rollno").value;
+           var number = "C901";
+           google.script.run.getValues(name,rollno,number,total,mobile);
+            //google.script.run.getValuesFromForm(document.forms[0]);
+        }
+    </script>
+    
+
+
+ <div id="output"></div>
+<div id="progressbar">
+    <div class="progress-label"></div>
+</div>
+
+    <div id="success" style="display:none">
+        <h5 class="center-align teal-text">Response sheet sucessfully Submitted</h5><br><br><br>
+        <p class="center-align"> Want to submit more Response sheets ?? Then click below .....</p>    
+         <p class="center-align"><a class="btn btn-success" name="click to submit more forms" href="https://goo.gl/0w8EWs">Click here</a></p>
+        </div>
+
+
+  <style>
+  
+  
+  
+     <div id="register" style="display:none">
+        <h5 class="left-align teal-text">Sorry you are not registered with us ! </h5><br><br><br>
+        <p> For Registration , click below .....</p>    
+         <p class="center-align"><a class="btn btn-success" name="click to submit more forms" href="https://docs.google.com/a/ssccglpinnacle.com/forms/d/e/1FAIpQLSdCABBHixLSS8OFHjzXBquLJGhldtFQyJMKMTK-c5QJQw19bQ/viewform">Click here</a></p>
+        </div>
+
+
+  <style>
+  
+  
+  
+    body {
+      max-width: 400px;
+      padding: 20px;
+      margin: auto;
+    }
+    input {
+      display: inline-block;
+      width: 100%;
+      padding: 5px 0px 5px 5px;
+      margin-bottom: 10px;
+      -webkit-box-sizing: border-box;
+      ?? -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+    select {
+      margin: 5px 0px 15px 0px;
+    }
+    input[type="submit"] {
+      width: auto !important;
+      display: block !important;
+    }
+    input[type="file"] {
+      padding: 5px 0px 15px 0px !important;
+    }
+#progressbar{
+    width: 100%;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    vertical-align: middle;
+
+}
+.progress-label {
+      float: left;
+margin-top: 5px;
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #fff;
+          width: 100%;
+    height: 100%;
+    position: absolute;
+    vertical-align: middle;
+    }
+  </style>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
